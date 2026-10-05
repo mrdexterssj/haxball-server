@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Haxball Panel | Control de Salas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0b;
+      --bg-secondary: #111113;
+      --bg-card: #18181b;
+      --bg-elevated: #1f1f23;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --text-primary: #fafafa;
+      --text-secondary: #71717a;
+      --text-muted: #52525b;
+      --border: #27272a;
+      --border-hover: #3f3f46;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.813rem;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 6px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .tab-btn .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .tab-btn .status-indicator.online {
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .tab-btn.active .status-indicator {
+      background: white;
+    }
+
+    .tab-btn.active .status-indicator.online {
+      background: #86efac;
+      box-shadow: 0 0 8px rgba(134, 239, 172, 0.5);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    /* Stacked Cards Container */
+    .cards-stack {
+      position: relative;
+      perspective: 1000px;
+    }
+
+    .sala-panel {
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    .sala-panel.active {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card Design */
+    .card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      background: linear-gradient(135deg, var(--bg-elevated), var(--bg-card));
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.688rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge.online {
+      background: var(--success-glow);
+      color: var(--success);
+    }
+
+    .status-badge.offline {
+      background: rgba(113, 113, 122, 0.15);
+      color: var(--text-secondary);
+    }
+
+    .status-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-badge.online .dot {
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* Form Sections */
+    .form-section {
+      margin-bottom: 16px;
+    }
+
+    .form-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 0.688rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Toggle */
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .toggle-label.private {
+      background: var(--danger-glow);
+      color: var(--danger);
+    }
+
+    .toggle-label.public {
+      background: var(--success-glow);
+      color: var(--success);
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      transition: 0.2s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 2px;
+      bottom: 2px;
+      background: var(--text-secondary);
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+      background: white;
+    }
+
+    input:disabled+.slider {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Inputs */
+    .input-group {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .input {
+      width: 100%;
+      padding: 14px 14px 14px 42px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .input.secure:focus {
+      border-color: var(--accent);
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-row.with-link {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Link Display */
+    .link-display {
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .link-display a {
+      flex: 1;
+      color: var(--accent-hover);
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .link-display a:hover {
+      text-decoration: underline;
+    }
+
+    .copy-btn {
+      padding: 8px 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      padding: 14px 16px;
+      background: var(--bg-primary);
+      border-radius: 12px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+    }
+
+    .stat-icon {
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    /* Footer Actions */
+    .footer-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .footer-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .footer-btn:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .footer-btn.highlight {
+      background: linear-gradient(135deg, var(--warning), #d97706);
+      border: none;
+      color: #000;
+    }
+
+    .footer-btn.highlight:hover {
+      opacity: 0.9;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 14px 24px;
+      border-radius: 12px;
+      color: white;
+      font-size: 0.875rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast-success {
+      background: var(--success);
+    }
+
+    .toast-error {
+      background: var(--danger);
+    }
+
+    .toast-link {
+      background: var(--accent);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      padding: 28px;
+      border-radius: 20px;
+      max-width: 440px;
+      width: 100%;
+      border: 1px solid var(--border);
+      text-align: center;
+      animation: modalIn 0.2s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .modal-content h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .modal-link {
+      background: var(--bg-primary);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+
+    .modal-link a {
+      color: var(--accent-hover);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .modal-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .modal-btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .modal-btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .modal-btn-secondary:hover {
+      background: var(--bg-elevated);
+    }
+
+    /* Instructions Modal */
+    .instructions {
+      text-align: left;
+    }
+
+    .instructions h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .instructions p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      font-size: 0.875rem;
+    }
+
+    .instructions ol {
+      margin-left: 20px;
+      margin-bottom: 20px;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .instructions a {
+      color: var(--accent);
+    }
+
+    .instructions code {
+      background: var(--bg-primary);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.813rem;
+    }
+
+    .warning-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .warning-box strong {
+      color: var(--warning);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.813rem;
+    }
+
+    .warning-box ul {
+      margin-left: 16px;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+    }
+
+    .warning-box li {
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="logo">Haxball Panel</div>
+      <p class="subtitle">Control de Salas de Torneo</p>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-nav" id="tabsNav">
+      <button class="tab-btn active" data-tab="1" onclick="cambiarTab(1)">
+        <span class="status-indicator" id="indicator-1"></span>
+        Sala 1
+      </button>
+      <button class="tab-btn" data-tab="2" onclick="cambiarTab(2)">
+        <span class="status-indicator" id="indicator-2"></span>
+        Sala 2
+      </button>
+      <button class="tab-btn" data-tab="3" onclick="cambiarTab(3)">
+        <span class="status-indicator" id="indicator-3"></span>
+        Sala 3
+      </button>
+    </div>
+
+    <!-- Stacked Cards -->
+    <div class="cards-stack" id="cardsStack">
+      <!-- Cards are rendered dynamically -->
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="footer-actions">
+      <button class="footer-btn highlight" onclick="mostrarInstrucciones()">
+        📖 Obtener Token
+      </button>
+      <button class="footer-btn" onclick="cargarEstado()">
+        ↻ Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Modal Link -->
+  <div class="modal" id="linkModal">
+    <div class="modal-content">
+      <h2>🔗 Link de la Sala</h2>
+      <div class="modal-link">
+        <a href="#" id="modalLink" target="_blank"></a>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-primary" onclick="copiarLinkModal()">Copiar</button>
+        <button class="modal-btn modal-btn-secondary" onclick="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Instrucciones -->
+  <div class="modal" id="instruccionesModal">
+    <div class="modal-content instructions">
+      <h2>Cómo Obtener el Token</h2>
+
+      <p>El token es necesario para crear una sala de Haxball:</p>
+
+      <ol>
+        <li>Abre <a href="https://www.haxball.com/headlesstoken" target="_blank">haxball.com/headlesstoken</a></li>
+        <li>Inicia sesión con tu cuenta</li>
+        <li>Resuelve el captcha</li>
+        <li>Copia el token (<code>thr1.xxx...</code>)</li>
+        <li>Pégalo en el campo de token</li>
+      </ol>
+
+      <div class="warning-box">
+        <strong>⚠️ Importante</strong>
+        <ul>
+          <li>El token expira cada ~24 horas</li>
+          <li>Puedes usar el mismo token en todas las salas</li>
+        </ul>
+      </div>
+
+      <div class="modal-actions">
+        <a href="https://www.haxball.com/headlesstoken" target="_blank" class="modal-btn modal-btn-primary"
+          style="text-decoration: none;">
+          Ir a Obtener Token
+        </a>
+        <button class="modal-btn modal-btn-secondary" onclick="cerrarInstrucciones()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.origin;
+    let currentModalLink = '';
+    let currentTab = 1;
+    let salasData = {};
+
+    // Toast
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast toast-${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Modal
+    function mostrarModal(link) {
+      currentModalLink = link;
+      document.getElementById('modalLink').href = link;
+      document.getElementById('modalLink').textContent = link;
+      document.getElementById('linkModal').classList.add('show');
+    }
+
+    function cerrarModal() {
+      document.getElementById('linkModal').classList.remove('show');
+    }
+
+    function copiarLinkModal() {
+      navigator.clipboard.writeText(currentModalLink);
+      showToast('✓ Link copiado', 'success');
+    }
+
+    function mostrarInstrucciones() {
+      document.getElementById('instruccionesModal').classList.add('show');
+    }
+
+    function cerrarInstrucciones() {
+      document.getElementById('instruccionesModal').classList.remove('show');
+    }
+
+    function copiarLink(link) {
+      navigator.clipboard.writeText(link);
+      showToast('✓ Link copiado', 'success');
+    }
+
+    // Tab switching
+    function cambiarTab(id) {
+      currentTab = id;
+
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab == id);
+      });
+
+      // Update panels
+      document.querySelectorAll('.sala-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.sala == id);
+      });
+    }
+
+    // Update toggle status
+    function actualizarToggleStatus(id) {
+      const toggle = document.getElementById(`public-${id}`);
+      const label = document.getElementById(`toggle-label-${id}`);
+      if (toggle && label) {
+        if (toggle.checked) {
+          label.textContent = 'Pública';
+          label.className = 'toggle-label public';
+        } else {
+          label.textContent = 'Privada';
+          label.className = 'toggle-label private';
+        }
+      }
+    }
+
+    // Render sala card
+    function renderSala(sala) {
+      const isOnline = sala.estado === 'online';
+      const hasLink = sala.link && sala.link.includes('haxball.com');
+      const isPublic = sala.isPublic || false;
+
+      return `
+        <div class="sala-panel ${sala.id == currentTab ? 'active' : ''}" data-sala="${sala.id}">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Sala ${sala.id}</span>
+              <span class="status-badge ${isOnline ? 'online' : 'offline'}">
+                <span class="dot"></span>
+                ${isOnline ? (isPublic ? 'Pública' : 'Privada') : 'Offline'}
+              </span>
+            </div>
+            <div class="card-body">
+              <div class="form-section">
+                <div class="section-header">
+                  <span class="section-title">Visibilidad</span>
+                  <div class="toggle-container">
+                    <span id="toggle-label-${sala.id}" class="toggle-label private">Privada</span>
+                    <label class="switch">
+                      <input 
+                        type="checkbox" 
+                        id="public-${sala.id}"
+                        onchange="actualizarToggleStatus(${sala.id})"
+                        ${isOnline ? 'disabled' : ''}
+                      >
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <div class="section-header">
+                  <span class="section-title">Configuración</span>
+                </div>
+                <div class="input-group" style="margin-bottom: 10px;">
+                  <span class="input-icon">🏟️</span>
+                  <input 
+                    type="text" 
+                    class="input" 
+                    id="nombre-${sala.id}"
+                    placeholder="Nombre de la sala"
+                    ${isOnline ? 'disabled' : ''}
+                    value="${sala.nombre && sala.nombre !== `Sala ${sala.id}` ? sala.nombre : ''}"
+                  >
+                </div>
+                <div class="input-group" style="margin-bottom: 10px;">
+                  <span class="input-icon">🔑</span>
+                  <input 
+                    type="text" 
+                    class="input" 
+                    id="token-${sala.id}"
+                    placeholder="Token de Haxball (thr1.xxx...)"
+                    ${isOnline ? 'disabled' : ''}
+                  >
+                </div>
+                <div class="input-group">
+                  <span class="input-icon">🔐</span>
+                  <input 
+                    type="password" 
+                    class="input secure" 
+                    id="accessCode-${sala.id}"
+                    placeholder="Código de acceso"
+                  >
+                </div>
+              </div>
+
+              <div class="btn-row ${isOnline ? 'with-link' : ''}">
+                <button 
+                  class="btn btn-success" 
+                  onclick="iniciarSala(${sala.id})"
+                  ${isOnline ? 'disabled' : ''}
+                >
+                  ▶ Iniciar
+                </button>
+                <button 
+                  class="btn btn-danger" 
+                  onclick="detenerSala(${sala.id})"
+                  ${!isOnline ? 'disabled' : ''}
+                >
+                  ■ Detener
+                </button>
+                ${isOnline ? `
+                  <button 
+                    class="btn btn-accent" 
+                    onclick="verLink(${sala.id})"
+                  >
+                    🔗 Link
+                  </button>
+                ` : ''}
+              </div>
+
+              ${isOnline && hasLink ? `
+                <div class="link-display">
+                  <a href="${sala.link}" target="_blank">${sala.link}</a>
+                  <button class="copy-btn" onclick="copiarLink('${sala.link}')">Copiar</button>
+                </div>
+              ` : ''}
+
+              ${isOnline ? `
+                <div class="stats-bar">
+                  <div class="stat">
+                    <span class="stat-icon">💾</span>
+                    <span class="stat-value">${sala.memoria} MB</span>
+                    <span class="stat-label">RAM</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-icon">⏱️</span>
+                    <span class="stat-value">${new Date(sala.uptime).toLocaleTimeString()}</span>
+                    <span class="stat-label">Inicio</span>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Track previous state to detect changes
+    let previousStates = {};
+    let isFirstLoad = true;
+
+    // Smart update - only updates what changed
+    function actualizarElemento(id, sala) {
+      const isOnline = sala.estado === 'online';
+      const hasLink = sala.link && sala.link.includes('haxball.com');
+      const isPublic = sala.isPublic || false;
+
+      // Update tab indicator
+      const indicator = document.getElementById(`indicator-${id}`);
+      if (indicator) {
+        indicator.classList.toggle('online', isOnline);
+      }
+
+      // Update status badge
+      const badge = document.querySelector(`[data-sala="${id}"] .status-badge`);
+      if (badge) {
+        badge.className = `status-badge ${isOnline ? 'online' : 'offline'}`;
+        badge.innerHTML = `<span class="dot"></span>${isOnline ? (isPublic ? 'Pública' : 'Privada') : 'Offline'}`;
+      }
+
+      // Update buttons state
+      const btnStart = document.querySelector(`[data-sala="${id}"] .btn-success`);
+      const btnStop = document.querySelector(`[data-sala="${id}"] .btn-danger`);
+      if (btnStart) btnStart.disabled = isOnline;
+      if (btnStop) btnStop.disabled = !isOnline;
+
+      // Update stats if online
+      const statsBar = document.querySelector(`[data-sala="${id}"] .stats-bar`);
+      if (isOnline && statsBar) {
+        const statValues = statsBar.querySelectorAll('.stat-value');
+        if (statValues[0]) statValues[0].textContent = `${sala.memoria} MB`;
+        if (statValues[1]) statValues[1].textContent = new Date(sala.uptime).toLocaleTimeString();
+      }
+
+      // Update link display
+      const linkDisplay = document.querySelector(`[data-sala="${id}"] .link-display`);
+      if (hasLink && linkDisplay) {
+        const linkEl = linkDisplay.querySelector('a');
+        if (linkEl) {
+          linkEl.href = sala.link;
+          linkEl.textContent = sala.link;
+        }
+      }
+    }
+
+    // Check if state changed significantly (online/offline toggle)
+    function stateChangedSignificantly(newData) {
+      for (let i = 1; i <= 3; i++) {
+        const prevState = previousStates[i]?.estado;
+        const newState = newData[i]?.estado;
+        if (prevState !== newState) return true;
+      }
+      return false;
+    }
+
+    // Load state
+    async function cargarEstado() {
+      try {
+        const res = await fetch(`${API_URL}/api/status`);
+        const data = await res.json();
+
+        const needsFullRender = isFirstLoad || stateChangedSignificantly(data.salas);
+
+        if (needsFullRender) {
+          // Save current inputs before re-render
+          const savedInputs = {};
+          for (let i = 1; i <= 3; i++) {
+            const nombre = document.getElementById(`nombre-${i}`);
+            const token = document.getElementById(`token-${i}`);
+            const accessCode = document.getElementById(`accessCode-${i}`);
+            const publicToggle = document.getElementById(`public-${i}`);
+
+            if (nombre || token || accessCode || publicToggle) {
+              savedInputs[i] = {
+                nombre: nombre ? nombre.value : '',
+                token: token ? token.value : '',
+                accessCode: accessCode ? accessCode.value : '',
+                isPublic: publicToggle ? publicToggle.checked : false
+              };
+            }
+          }
+
+          // Full render
+          const container = document.getElementById('cardsStack');
+          container.innerHTML = Object.values(data.salas).map(renderSala).join('');
+
+          // Restore inputs
+          for (let i = 1; i <= 3; i++) {
+            if (savedInputs[i]) {
+              const nombre = document.getElementById(`nombre-${i}`);
+              const token = document.getElementById(`token-${i}`);
+              const accessCode = document.getElementById(`accessCode-${i}`);
+              const publicToggle = document.getElementById(`public-${i}`);
+
+              if (data.salas[i].estado !== 'online') {
+                if (nombre) nombre.value = savedInputs[i].nombre || '';
+                if (token) token.value = savedInputs[i].token || '';
+                if (publicToggle) {
+                  publicToggle.checked = savedInputs[i].isPublic;
+                  actualizarToggleStatus(i);
+                }
+              }
+
+              if (accessCode) accessCode.value = savedInputs[i].accessCode || '';
+            }
+          }
+
+          // Update tab indicators
+          for (let i = 1; i <= 3; i++) {
+            const indicator = document.getElementById(`indicator-${i}`);
+            if (indicator) {
+              indicator.classList.toggle('online', data.salas[i].estado === 'online');
+            }
+          }
+
+          isFirstLoad = false;
+        } else {
+          // Smart update - only update indicators and stats
+          for (let i = 1; i <= 3; i++) {
+            actualizarElemento(i, data.salas[i]);
+          }
+        }
+
+        // Save state for comparison
+        previousStates = JSON.parse(JSON.stringify(data.salas));
+        salasData = data.salas;
+
+      } catch (error) {
+        // Silent fail on refresh - don't show toast for background updates
+        console.log('Error actualizando estado');
+      }
+    }
+
+    // Get link
+    async function verLink(id) {
+      try {
+        const res = await fetch(`${API_URL}/api/salas/${id}/link`);
+        const data = await res.json();
+        if (data.success && data.link) {
+          mostrarModal(data.link);
+        } else {
+          showToast('Link no disponible', 'error');
+        }
+      } catch (error) {
+        showToast('Error al obtener link', 'error');
+      }
+    }
+
+    // Start room
+    async function iniciarSala(id) {
+      const token = document.getElementById(`token-${id}`).value.trim();
+      const accessCode = document.getElementById(`accessCode-${id}`).value.trim();
+      const roomName = document.getElementById(`nombre-${id}`).value.trim();
+      const publicToggle = document.getElementById(`public-${id}`);
+      const isPublic = publicToggle ? publicToggle.checked : false;
+
+      if (!accessCode) {
+        showToast('Ingresa el código de acceso', 'error');
+        return;
+      }
+
+      if (!token) {
+        showToast('Ingresa el token', 'error');
+        return;
+      }
+
+      if (!token.startsWith('thr1.')) {
+        showToast('Token inválido', 'error');
+        return;
+      }
+
+      showToast('Iniciando...', 'link');
+
+      try {
+        const res = await fetch(`${API_URL}/api/salas/${id}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, isPublic, roomName, accessCode })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          if (data.link && data.link.includes('haxball.com')) {
+            showToast('Sala iniciada ✓', 'success');
+            mostrarModal(data.link);
+          } else {
+            showToast('Sala iniciada ✓', 'success');
+          }
+          setTimeout(cargarEstado, 2000);
+        } else {
+          showToast(data.error, 'error');
+        }
+      } catch (error) {
+        showToast('Error al iniciar', 'error');
+      }
+    }
+
+    // Stop room
+    async function detenerSala(id) {
+      const accessCode = document.getElementById(`accessCode-${id}`).value.trim();
+
+      if (!accessCode) {
+        showToast('Ingresa el código de acceso', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/salas/${id}/stop`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessCode })
+        });
+
+        showToast('Sala detenida ✓', 'success');
+        cerrarModal();
+        setTimeout(cargarEstado, 1000);
+      } catch (error) {
+        showToast('Error al detener', 'error');
+      }
+    }
+
+    // Init
+    cargarEstado();
+    setInterval(cargarEstado, 5000);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        cerrarModal();
+        cerrarInstrucciones();
+      }
+    });
+  </script>
+</body>
+
+</html>
