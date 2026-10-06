@@ -1,4 +1,7 @@
 #!/bin/bash
+
+#WARNING: This script is deprecated, will not work (redundant with deploy.sh)
+
 # ============================================
 # Script de instalación para VPS
 # Ejecutar con: bash setup.sh

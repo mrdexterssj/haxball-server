@@ -1,0 +1,1 @@
+1. Replace salastorneo.duckdns.org in nginx-salastorneo.conf with server's local IP addr
