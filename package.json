@@ -1,0 +1,22 @@
+{
+  "name": "salastorneo-haxball",
+  "version": "1.0.0",
+  "description": "Sistema de salas de Haxball para torneos en VPS",
+  "main": "control.js",
+  "scripts": {
+    "start": "node control.js status",
+    "sala1": "node control.js start 1",
+    "sala2": "node control.js start 2",
+    "sala3": "node control.js start 3",
+    "stop-all": "node control.js stop-all"
+  },
+  "dependencies": {
+    "haxball.js": "^2.2.3",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
