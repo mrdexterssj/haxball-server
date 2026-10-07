@@ -71,10 +71,10 @@ if [ ! -f .env ]; then
 fi
 
 # 7. Configurar SSL con Certbot
-echo -e "${YELLOW}7. Setting up SSL (HTTPS)...${NC}"
-echo -e "${YELLOW}   This will open a prompt for your email and a ToS prompt${NC}"
-#WARNING: Change example email
-sudo certbot --nginx -d salastorneo.duckdns.org --non-interactive --agree-tos --email tu-email@example.com || true
+###echo -e "${YELLOW}7. Setting up SSL (HTTPS)...${NC}"
+###echo -e "${YELLOW}   This will open a prompt for your email and a ToS prompt${NC}"
+####WARNING: Change example email
+###sudo certbot --nginx -d salastorneo.duckdns.org --non-interactive --agree-tos --email tu-email@example.com || true
 
 # 8. Iniciar panel con PM2
 echo -e "${YELLOW}8. Starting web panel with PM2...${NC}"
